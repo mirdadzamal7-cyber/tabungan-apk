@@ -38,6 +38,18 @@ import { PengingatModal } from './components/PengingatModal';
 import { LoginScreen } from './components/LoginScreen';
 import { AdminKelolaNasabah } from './components/AdminKelolaNasabah';
 import {
+  saveTransactionToFirestore,
+  deleteTransactionFromFirestore,
+  saveGoalToFirestore,
+  deleteGoalFromFirestore,
+  saveNasabahToFirestore,
+  deleteNasabahFromFirestore,
+  subscribeToTransactions,
+  subscribeToGoals,
+  subscribeToNasabah,
+  seedInitialFirestoreDataIfEmpty,
+} from './firebase';
+import {
   Wallet,
   PiggyBank,
   TrendingUp,
@@ -70,12 +82,47 @@ export default function App() {
   const [txToDelete, setTxToDelete] = useState<SavingsTransaction | null>(null);
   const [goalToDelete, setGoalToDelete] = useState<TargetGoal | null>(null);
 
-  // Initialize data from storage on mount
+  // Initialize data from storage and sync with Firestore on mount
   useEffect(() => {
     const loadedTx = loadStoredTransactions();
     const loadedGoals = loadStoredGoals();
+    const loadedNasabah = loadStoredNasabahUsers();
     setTransactions(loadedTx);
     setGoals(loadedGoals);
+    setNasabahUsers(loadedNasabah);
+
+    // Initial check & seed Firestore if database is clean
+    seedInitialFirestoreDataIfEmpty(loadedTx, loadedGoals, loadedNasabah).catch((e) => {
+      console.warn('Initial Firestore seed check:', e);
+    });
+
+    // Real-time synchronization listeners
+    const unsubTx = subscribeToTransactions((firestoreTx) => {
+      if (firestoreTx && firestoreTx.length > 0) {
+        setTransactions(firestoreTx);
+        saveStoredTransactions(firestoreTx);
+      }
+    });
+
+    const unsubGoals = subscribeToGoals((firestoreGoals) => {
+      if (firestoreGoals && firestoreGoals.length > 0) {
+        setGoals(firestoreGoals);
+        saveStoredGoals(firestoreGoals);
+      }
+    });
+
+    const unsubNasabah = subscribeToNasabah((firestoreNasabah) => {
+      if (firestoreNasabah && firestoreNasabah.length > 0) {
+        setNasabahUsers(firestoreNasabah);
+        saveStoredNasabahUsers(firestoreNasabah);
+      }
+    });
+
+    return () => {
+      unsubTx?.();
+      unsubGoals?.();
+      unsubNasabah?.();
+    };
   }, []);
 
   const handleLoginSuccess = (session: AuthSession) => {
@@ -149,6 +196,7 @@ export default function App() {
     const updatedTxList = [newTx, ...transactions];
     setTransactions(updatedTxList);
     saveStoredTransactions(updatedTxList);
+    saveTransactionToFirestore(newTx).catch((e) => console.warn('Sync tx to Firestore:', e));
 
     // If assigned to a target goal, update the goal's current amount
     if (newTx.targetGoalId) {
@@ -156,11 +204,13 @@ export default function App() {
         if (g.id === newTx.targetGoalId) {
           const delta = newTx.type === 'setoran' ? newTx.amount : -newTx.amount;
           const updatedAmount = Math.max(0, g.currentAmount + delta);
-          return {
+          const updatedGoal = {
             ...g,
             currentAmount: updatedAmount,
             isCompleted: updatedAmount >= g.targetAmount,
           };
+          saveGoalToFirestore(updatedGoal).catch((e) => console.warn('Sync goal to Firestore:', e));
+          return updatedGoal;
         }
         return g;
       });
@@ -184,6 +234,7 @@ export default function App() {
     const updatedList = transactions.filter((t) => t.id !== id);
     setTransactions(updatedList);
     saveStoredTransactions(updatedList);
+    deleteTransactionFromFirestore(id).catch((e) => console.warn('Delete tx from Firestore:', e));
 
     // Reverse goal contribution if any
     if (txToDelete.targetGoalId) {
@@ -191,11 +242,13 @@ export default function App() {
         if (g.id === txToDelete.targetGoalId) {
           const reverseDelta = txToDelete.type === 'setoran' ? -txToDelete.amount : txToDelete.amount;
           const updatedAmount = Math.max(0, g.currentAmount + reverseDelta);
-          return {
+          const updatedGoal = {
             ...g,
             currentAmount: updatedAmount,
             isCompleted: updatedAmount >= g.targetAmount,
           };
+          saveGoalToFirestore(updatedGoal).catch((e) => console.warn('Sync goal to Firestore:', e));
+          return updatedGoal;
         }
         return g;
       });
@@ -219,6 +272,7 @@ export default function App() {
     const updatedUsers = [...nasabahUsers, newNasabah];
     setNasabahUsers(updatedUsers);
     saveStoredNasabahUsers(updatedUsers);
+    saveNasabahToFirestore(newNasabah).catch((e) => console.warn('Sync nasabah to Firestore:', e));
 
     // If there's an initial deposit, record it automatically
     if (initialDeposit && initialDeposit > 0) {
@@ -238,6 +292,7 @@ export default function App() {
       const updatedTx = [depositTx, ...transactions];
       setTransactions(updatedTx);
       saveStoredTransactions(updatedTx);
+      saveTransactionToFirestore(depositTx).catch((e) => console.warn('Sync init tx to Firestore:', e));
     }
   };
 
@@ -246,6 +301,7 @@ export default function App() {
     const updatedUsers = nasabahUsers.map((n) => (n.id === updated.id ? updated : n));
     setNasabahUsers(updatedUsers);
     saveStoredNasabahUsers(updatedUsers);
+    saveNasabahToFirestore(updated).catch((e) => console.warn('Sync nasabah to Firestore:', e));
   };
 
   // Admin: Delete Nasabah User
@@ -253,6 +309,7 @@ export default function App() {
     const updatedUsers = nasabahUsers.filter((n) => n.id !== id);
     setNasabahUsers(updatedUsers);
     saveStoredNasabahUsers(updatedUsers);
+    deleteNasabahFromFirestore(id).catch((e) => console.warn('Delete nasabah from Firestore:', e));
   };
 
   // Open deposit modal targeting a specific student
@@ -274,6 +331,7 @@ export default function App() {
     const updatedGoals = [...goals, newGoal];
     setGoals(updatedGoals);
     saveStoredGoals(updatedGoals);
+    saveGoalToFirestore(newGoal).catch((e) => console.warn('Sync goal to Firestore:', e));
   };
 
   // Delete Goal
@@ -290,6 +348,7 @@ export default function App() {
     const updated = goals.filter((g) => g.id !== goalToDelete.id);
     setGoals(updated);
     saveStoredGoals(updated);
+    deleteGoalFromFirestore(goalToDelete.id).catch((e) => console.warn('Delete goal from Firestore:', e));
     setGoalToDelete(null);
   };
 
@@ -311,12 +370,16 @@ export default function App() {
     setGoals(restoredGoals);
     saveStoredTransactions(restoredTx);
     saveStoredGoals(restoredGoals);
+    restoredTx.forEach((tx) => saveTransactionToFirestore(tx).catch(() => {}));
+    restoredGoals.forEach((g) => saveGoalToFirestore(g).catch(() => {}));
   };
 
   const handleResetSampleData = () => {
     const data = resetToSampleData();
     setTransactions(data.transactions);
     setGoals(data.goals);
+    data.transactions.forEach((tx) => saveTransactionToFirestore(tx).catch(() => {}));
+    data.goals.forEach((g) => saveGoalToFirestore(g).catch(() => {}));
   };
 
   return (

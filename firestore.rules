@@ -1,0 +1,107 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net: default-deny all undefined paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isBootstrappedAdmin() {
+      return isSignedIn() &&
+        request.auth.token.email == 'mirdadzamal7@gmail.com' &&
+        request.auth.token.email_verified == true;
+    }
+
+    function isValidNasabah(data) {
+      return data.keys().hasAll(['id', 'accountNumber', 'name', 'kelas', 'username', 'createdAt', 'isActive']) &&
+        data.id is string && data.id.size() <= 64 &&
+        data.accountNumber is string && data.accountNumber.size() <= 32 &&
+        data.name is string && data.name.size() <= 100 &&
+        data.kelas is string && data.kelas.size() <= 50 &&
+        data.username is string && data.username.size() <= 50 &&
+        (!('password' in data) || (data.password is string && data.password.size() <= 100)) &&
+        (!('parentPhone' in data) || (data.parentPhone is string && data.parentPhone.size() <= 30)) &&
+        (!('notes' in data) || (data.notes is string && data.notes.size() <= 500)) &&
+        data.createdAt is number &&
+        data.isActive is bool;
+    }
+
+    function isValidTransaction(data) {
+      return data.keys().hasAll(['id', 'type', 'amount', 'date', 'time', 'categoryId', 'createdAt']) &&
+        data.id is string && data.id.size() <= 64 &&
+        data.type in ['setoran', 'penarikan'] &&
+        data.amount is number && data.amount > 0 &&
+        data.date is string && data.date.size() <= 20 &&
+        data.time is string && data.time.size() <= 10 &&
+        data.categoryId is string && data.categoryId.size() <= 50 &&
+        (!('targetGoalId' in data) || (data.targetGoalId is string && data.targetGoalId.size() <= 64)) &&
+        (!('nasabahId' in data) || (data.nasabahId is string && data.nasabahId.size() <= 64)) &&
+        (!('nasabahName' in data) || (data.nasabahName is string && data.nasabahName.size() <= 100)) &&
+        (!('teller' in data) || (data.teller is string && data.teller.size() <= 100)) &&
+        (!('notes' in data) || (data.notes is string && data.notes.size() <= 500)) &&
+        data.createdAt is number;
+    }
+
+    function isValidGoal(data) {
+      return data.keys().hasAll(['id', 'name', 'targetAmount', 'currentAmount', 'deadlineDate', 'createdAt']) &&
+        data.id is string && data.id.size() <= 64 &&
+        data.name is string && data.name.size() <= 100 &&
+        data.targetAmount is number && data.targetAmount > 0 &&
+        data.currentAmount is number && data.currentAmount >= 0 &&
+        data.deadlineDate is string && data.deadlineDate.size() <= 20 &&
+        (!('category' in data) || (data.category is string && data.category.size() <= 50)) &&
+        (!('color' in data) || (data.color is string && data.color.size() <= 30)) &&
+        (!('icon' in data) || (data.icon is string && data.icon.size() <= 50)) &&
+        (!('isCompleted' in data) || data.isCompleted is bool) &&
+        data.createdAt is number;
+    }
+
+    // Connection Health Check endpoint
+    match /test/{testId} {
+      allow read: if true;
+    }
+
+    // Nasabah collection (Students directory)
+    match /nasabah/{nasabahId} {
+      allow read: if true;
+      allow create: if isValidId(nasabahId) && isValidNasabah(incoming());
+      allow update: if isValidId(nasabahId) && isValidNasabah(incoming());
+      allow delete: if isValidId(nasabahId);
+    }
+
+    // Transactions collection (Savings ledger)
+    match /transactions/{transactionId} {
+      allow read: if true;
+      allow create: if isValidId(transactionId) && isValidTransaction(incoming());
+      allow update: if isValidId(transactionId) && isValidTransaction(incoming());
+      allow delete: if isValidId(transactionId);
+    }
+
+    // Goals collection (Savings targets)
+    match /goals/{goalId} {
+      allow read: if true;
+      allow create: if isValidId(goalId) && isValidGoal(incoming());
+      allow update: if isValidId(goalId) && isValidGoal(incoming());
+      allow delete: if isValidId(goalId);
+    }
+  }
+}

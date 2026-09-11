@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { Download, Upload, Printer, RefreshCw, Trash2, CheckCircle2, ShieldAlert, Sliders, Smartphone } from 'lucide-react';
+import { Download, Upload, Printer, RefreshCw, Trash2, CheckCircle2, ShieldAlert, Sliders, Smartphone, Cloud, Database } from 'lucide-react';
 import { SavingsTransaction, TargetGoal, UserPreferences } from '../types';
 import { formatRupiah, formatTanggalIndo, parseRupiahInput, triggerAndroidHaptic } from '../utils/formatters';
+import { saveTransactionToFirestore, saveGoalToFirestore } from '../firebase';
 
 interface EksporBackupProps {
   transactions: SavingsTransaction[];
@@ -28,10 +29,30 @@ export const EksporBackup: React.FC<EksporBackupProps> = ({
   const [dailyTarget, setDailyTarget] = useState(preferences.dailyTargetAmount);
   const [vibration, setVibration] = useState(preferences.enableVibration);
   const [userName, setUserName] = useState(preferences.userName);
+  const [isSyncingCloud, setIsSyncingCloud] = useState(false);
 
   const showToast = (msg: string) => {
     setSuccessMessage(msg);
     setTimeout(() => setSuccessMessage(null), 3000);
+  };
+
+  const handleSyncToFirestore = async () => {
+    try {
+      setIsSyncingCloud(true);
+      triggerAndroidHaptic(vibration, 15);
+      for (const t of transactions) {
+        await saveTransactionToFirestore(t);
+      }
+      for (const g of goals) {
+        await saveGoalToFirestore(g);
+      }
+      showToast('Seluruh data berhasil disinkronkan ke Cloud Firestore!');
+    } catch (e: any) {
+      console.error('Manual Firestore sync error:', e);
+      showToast('Gagal sinkronisasi: ' + (e.message || 'Periksa koneksi'));
+    } finally {
+      setIsSyncingCloud(false);
+    }
   };
 
   const handleSavePreferences = (e: React.FormEvent) => {
@@ -254,6 +275,31 @@ export const EksporBackup: React.FC<EksporBackupProps> = ({
             className="hidden"
           />
         </div>
+      </div>
+
+      {/* Cloud Database Firestore Card */}
+      <div className="bg-gradient-to-br from-emerald-900 to-slate-900 text-white rounded-2xl p-4 shadow-md border border-emerald-500/20">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
+            <Cloud className="w-4 h-4 text-emerald-400" />
+            Cloud Database Firestore
+          </h3>
+          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-semibold border border-emerald-500/30">
+            Aktif (asia-southeast1)
+          </span>
+        </div>
+        <p className="text-xs text-slate-300 mb-3">
+          Semua catatan setoran, penarikan, target celengan, dan nasabah tersimpan di Google Cloud Firestore secara real-time.
+        </p>
+
+        <button
+          onClick={handleSyncToFirestore}
+          disabled={isSyncingCloud}
+          className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-98 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition"
+        >
+          <Database className="w-3.5 h-3.5" />
+          {isSyncingCloud ? 'Sedang Menyinkronkan...' : 'Paksa Sinkronisasi Sekarang ke Cloud'}
+        </button>
       </div>
 
       {/* Reset to Samples */}

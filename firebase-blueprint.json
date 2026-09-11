@@ -1,0 +1,74 @@
+{
+  "entities": {
+    "nasabah": {
+      "title": "Nasabah",
+      "description": "Data profil siswa atau nasabah tabungan sekolah",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "accountNumber": { "type": "string", "maxLength": 32 },
+        "name": { "type": "string", "maxLength": 100 },
+        "kelas": { "type": "string", "maxLength": 50 },
+        "username": { "type": "string", "maxLength": 50 },
+        "password": { "type": "string", "maxLength": 100 },
+        "parentPhone": { "type": "string", "maxLength": 30 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "number" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["id", "accountNumber", "name", "kelas", "username", "createdAt", "isActive"]
+    },
+    "transaction": {
+      "title": "Transaction",
+      "description": "Catatan transaksi setoran dan penarikan tabungan",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "type": { "type": "string", "enum": ["setoran", "penarikan"] },
+        "amount": { "type": "number" },
+        "date": { "type": "string", "maxLength": 20 },
+        "time": { "type": "string", "maxLength": 10 },
+        "categoryId": { "type": "string", "maxLength": 50 },
+        "targetGoalId": { "type": "string", "maxLength": 64 },
+        "nasabahId": { "type": "string", "maxLength": 64 },
+        "nasabahName": { "type": "string", "maxLength": 100 },
+        "teller": { "type": "string", "maxLength": 100 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "type", "amount", "date", "time", "categoryId", "createdAt"]
+    },
+    "goal": {
+      "title": "TargetGoal",
+      "description": "Target dan impian celengan tabungan",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "name": { "type": "string", "maxLength": 100 },
+        "targetAmount": { "type": "number" },
+        "currentAmount": { "type": "number" },
+        "deadlineDate": { "type": "string", "maxLength": 20 },
+        "category": { "type": "string", "maxLength": 50 },
+        "color": { "type": "string", "maxLength": 30 },
+        "icon": { "type": "string", "maxLength": 50 },
+        "createdAt": { "type": "number" },
+        "isCompleted": { "type": "boolean" }
+      },
+      "required": ["id", "name", "targetAmount", "currentAmount", "deadlineDate", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/nasabah/{nasabahId}": {
+      "schema": { "$ref": "#/entities/nasabah" },
+      "description": "Koleksi data akun dan profil nasabah siswa"
+    },
+    "/transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/transaction" },
+      "description": "Koleksi riwayat transaksi keuangan tabungan"
+    },
+    "/goals/{goalId}": {
+      "schema": { "$ref": "#/entities/goal" },
+      "description": "Koleksi target impian dan celengan nasabah"
+    }
+  }
+}

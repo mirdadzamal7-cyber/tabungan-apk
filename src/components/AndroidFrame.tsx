@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wifi, BatteryMedium, Smartphone, Monitor, Download, BellRing, LogOut, ShieldCheck, User } from 'lucide-react';
+import { Wifi, BatteryMedium, Smartphone, Monitor, Download, BellRing, LogOut, ShieldCheck, User, Cloud } from 'lucide-react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { AuthSession } from '../types';
 
@@ -50,6 +50,10 @@ export const AndroidFrame: React.FC<AndroidFrameProps> = ({
           <span className="font-bold text-slate-100">Tabungan Berkah</span>
           <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-400 font-medium border border-teal-500/20 text-[10px]">
             SDN Margawangi
+          </span>
+          <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-medium border border-emerald-500/30 text-[10px]">
+            <Cloud className="w-3 h-3 text-emerald-400" />
+            <span>Cloud Sync</span>
           </span>
         </div>
 

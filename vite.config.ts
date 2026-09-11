@@ -14,12 +14,13 @@ export default defineConfig(() => {
         includeAssets: ['icon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
         manifest: {
           id: '/',
-          name: 'TabungKu Rekap Tabungan',
-          short_name: 'TabungKu',
-          description: 'Aplikasi rekap tabungan harian, mingguan, dan bulanan untuk Android 10+.',
-          theme_color: '#0f766e',
-          background_color: '#f8fafc',
+          name: 'Tabungan Berkah SDN Margawangi',
+          short_name: 'Tabungan Berkah',
+          description: 'Aplikasi Rekap Tabungan Berkah SDN Margawangi untuk Android 10+.',
+          theme_color: '#0284c7',
+          background_color: '#0f172a',
           display: 'standalone',
+          orientation: 'portrait',
           start_url: '/',
           scope: '/',
           icons: [

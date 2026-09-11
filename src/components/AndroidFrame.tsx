@@ -9,6 +9,7 @@ interface AndroidFrameProps {
   isSimulatedDevice: boolean;
   onToggleSimulatedDevice: () => void;
   onOpenReminderModal: () => void;
+  onOpenQrModal?: () => void;
   session?: AuthSession | null;
   onLogout?: () => void;
 }
@@ -19,6 +20,7 @@ export const AndroidFrame: React.FC<AndroidFrameProps> = ({
   isSimulatedDevice,
   onToggleSimulatedDevice,
   onOpenReminderModal,
+  onOpenQrModal,
   session,
   onLogout,
 }) => {
@@ -70,6 +72,19 @@ export const AndroidFrame: React.FC<AndroidFrameProps> = ({
                 </span>
               )}
             </div>
+          )}
+
+          {onOpenQrModal && (
+            <button
+              type="button"
+              onClick={onOpenQrModal}
+              title="Buka di HP Android (QR Code & Salin Link)"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition shadow-xs cursor-pointer active:scale-95"
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Buka di HP</span>
+              <span className="sm:hidden">HP</span>
+            </button>
           )}
 
           {session && onLogout && (

@@ -37,6 +37,7 @@ import { PWAInstallBanner } from './components/PWAInstallBanner';
 import { PengingatModal } from './components/PengingatModal';
 import { LoginScreen } from './components/LoginScreen';
 import { AdminKelolaNasabah } from './components/AdminKelolaNasabah';
+import { AndroidQrModal } from './components/AndroidQrModal';
 import {
   saveTransactionToFirestore,
   deleteTransactionFromFirestore,
@@ -75,6 +76,7 @@ export default function App() {
   const [prefilledGoalId, setPrefilledGoalId] = useState<string | undefined>(undefined);
   const [prefilledNasabahId, setPrefilledNasabahId] = useState<string | undefined>(undefined);
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [isSimulatedDevice, setIsSimulatedDevice] = useState(true);
 
   // In-app confirmation modal states
@@ -388,6 +390,7 @@ export default function App() {
       isSimulatedDevice={isSimulatedDevice}
       onToggleSimulatedDevice={() => setIsSimulatedDevice((prev) => !prev)}
       onOpenReminderModal={() => setIsReminderModalOpen(true)}
+      onOpenQrModal={() => setIsQrModalOpen(true)}
       session={authSession}
       onLogout={handleOpenLogoutModal}
     >
@@ -877,6 +880,12 @@ export default function App() {
           </div>
         </div>
       )}
+      {/* QR Code Modal for Android */}
+      <AndroidQrModal
+        isOpen={isQrModalOpen}
+        onClose={() => setIsQrModalOpen(false)}
+        enableVibration={preferences.enableVibration}
+      />
     </AndroidFrame>
   );
 }

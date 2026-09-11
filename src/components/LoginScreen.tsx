@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { User, Lock, Eye, EyeOff, ShieldCheck, Sparkles, GraduationCap, AlertCircle, CheckCircle2, Cloud, Database } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, ShieldCheck, Sparkles, GraduationCap, AlertCircle, CheckCircle2, Cloud, Database, QrCode, Smartphone } from 'lucide-react';
 import { NasabahUser, AuthSession } from '../types';
 import { verifyLogin, ADMIN_CREDENTIALS } from '../utils/storage';
 import { triggerAndroidHaptic } from '../utils/formatters';
 import { loginWithGoogle } from '../firebase';
+import { AndroidQrModal } from './AndroidQrModal';
 
 interface LoginScreenProps {
   nasabahUsers: NasabahUser[];
@@ -19,9 +20,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   const [activeRoleTab, setActiveRoleTab] = useState<'nasabah' | 'admin'>('nasabah');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
 
   const handleGoogleLogin = async () => {
     try {
@@ -78,6 +80,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     setActiveRoleTab(role);
     setUsername(u);
     setPassword(p);
+    setShowPassword(true);
     setErrorMessage(null);
     triggerAndroidHaptic(enableVibration, 10);
   };
@@ -210,9 +213,28 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-semibold text-slate-600">
+                  Password
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-[11px] text-sky-600 hover:text-sky-800 font-bold flex items-center gap-1 cursor-pointer"
+                >
+                  {showPassword ? (
+                    <>
+                      <EyeOff className="w-3.5 h-3.5" />
+                      <span>Sembunyikan</span>
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Tampilkan Sandi</span>
+                    </>
+                  )}
+                </button>
+              </div>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
@@ -220,13 +242,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Masukkan password"
-                  className="w-full pl-9 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none focus:border-sky-600"
+                  className="w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none focus:border-sky-600"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="p-1 text-slate-400 hover:text-slate-600 absolute right-2.5 top-1/2 -translate-y-1/2"
+                  title={showPassword ? 'Sembunyikan sandi' : 'Tampilkan sandi'}
+                  className="p-1.5 text-slate-500 hover:text-slate-800 absolute right-2 top-1/2 -translate-y-1/2"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -325,13 +348,31 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             </div>
           </div>
 
-          <div className="mt-3 text-center">
+          <div className="mt-3 pt-3 border-t border-slate-100 flex flex-col items-center gap-1.5 text-center">
+            <button
+              type="button"
+              onClick={() => {
+                triggerAndroidHaptic(enableVibration, 10);
+                setShowQrModal(true);
+              }}
+              className="w-full py-2 px-3 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 font-bold text-xs flex items-center justify-center gap-2 border border-sky-200/80 transition"
+            >
+              <Smartphone className="w-4 h-4 text-sky-600" />
+              <span>Buka di HP Android (Scan QR Code)</span>
+            </button>
             <p className="text-[10px] text-slate-400">
               * Akun nasabah siswa baru dibuat dan dikelola oleh Admin SDN Margawangi
             </p>
           </div>
         </div>
       </div>
+
+      {/* QR Code Modal for Android */}
+      <AndroidQrModal
+        isOpen={showQrModal}
+        onClose={() => setShowQrModal(false)}
+        enableVibration={enableVibration}
+      />
     </div>
   );
 };

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f766e" />
+      <stop offset="100%" stop-color="#042f2e" />
+    </linearGradient>
+    <linearGradient id="goldCoin" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde047" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <linearGradient id="piggyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#e2e8f0" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-opacity="0.25" />
+    </filter>
+  </defs>
+  <!-- Background squircle -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+  
+  <!-- Falling Coin -->
+  <g filter="url(#dropShadow)">
+    <circle cx="256" cy="140" r="54" fill="url(#goldCoin)" stroke="#fef08a" stroke-width="4" />
+    <circle cx="256" cy="140" r="40" fill="none" stroke="#b45309" stroke-width="3" stroke-dasharray="6,4" />
+    <text x="256" y="152" font-family="Arial, sans-serif" font-weight="bold" font-size="34" fill="#78350f" text-anchor="middle">Rp</text>
+  </g>
+
+  <!-- Piggy Bank / Savings Vault Body -->
+  <g filter="url(#dropShadow)">
+    <!-- Legs -->
+    <rect x="180" y="370" width="36" height="48" rx="14" fill="#cbd5e1" />
+    <rect x="296" y="370" width="36" height="48" rx="14" fill="#cbd5e1" />
+
+    <!-- Main Body -->
+    <ellipse cx="256" cy="300" rx="140" ry="110" fill="url(#piggyGrad)" />
+    
+    <!-- Snout / Nose -->
+    <ellipse cx="140" cy="310" rx="34" ry="26" fill="#f1f5f9" stroke="#94a3b8" stroke-width="3" />
+    <circle cx="132" cy="310" r="5" fill="#64748b" />
+    <circle cx="148" cy="310" r="5" fill="#64748b" />
+
+    <!-- Ear -->
+    <path d="M190,225 C180,180 230,195 220,230 Z" fill="#f8fafc" stroke="#94a3b8" stroke-width="3" />
+
+    <!-- Eye -->
+    <circle cx="190" cy="275" r="8" fill="#1e293b" />
+    <circle cx="193" cy="272" r="2.5" fill="#ffffff" />
+
+    <!-- Coin Slot on Top -->
+    <rect x="226" y="196" width="60" height="12" rx="6" fill="#0f766e" />
+
+    <!-- Indonesian Rupiah symbol or star on body -->
+    <circle cx="280" cy="305" r="32" fill="#0d9488" opacity="0.15" />
+    <text x="280" y="316" font-family="Arial, sans-serif" font-weight="900" font-size="28" fill="#0d9488" text-anchor="middle">Rp</text>
+
+    <!-- Tail curl -->
+    <path d="M380,285 C410,270 420,310 395,305" fill="none" stroke="#94a3b8" stroke-width="6" stroke-linecap="round" />
+  </g>
+</svg>

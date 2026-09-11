@@ -1,0 +1,6 @@
+{
+  "name": "Tabungan Berkah - SDN Margawangi",
+  "description": "Aplikasi Tabungan Berkah SDN Margawangi untuk Android 10+ dengan akses Admin & Nasabah siswa, rekap harian, mingguan, bulanan, dan target setoran.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
